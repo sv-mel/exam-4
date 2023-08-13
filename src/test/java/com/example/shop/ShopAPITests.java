@@ -1,25 +1,22 @@
 package com.example.shop;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import io.restassured.builder.ResponseSpecBuilder;
 
+import io.restassured.RestAssured;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import static io.qameta.allure.Allure.step;
-import static org.hamcrest.Matchers.equalTo;
+import java.util.List;
 
 public class ShopAPITests {
 
-   // RequestSpecification request;
     ResponseSpecification responseShop;
 
+
     @BeforeAll
-    public static void setBaseUrl (){
+    public static void setBaseUrl() {
         RestAssured.baseURI = "http://localhost:4000";
     }
 
@@ -32,20 +29,36 @@ public class ShopAPITests {
 
     @Test
     @DisplayName("Get all shops")
-    public void shouldGetByCityPositive() {
+    public void shouldGetShopPositive() {
         RequestSpecification getRequest = RestAssured.given();
-        Response getResponse = getRequest.get("/shops/all");
-        getResponse.then().statusCode(200);
+        Response response = getRequest.get("/shops/all");
+
+        // Retrieve the body of the Response
+        ResponseBody body = response.getBody();
+        String bodyAsString = body.asString();
+        Assertions.assertEquals(bodyAsString.contains("shopName"), true);
+
     }
-//
-//    @Test
-//    @DisplayName("Create new shop")
-//    public void shouldAddShop() {
-//        RequestSpecification getRequest = RestAssured.given();
-//        Response getResponse = getRequest.get("/shops/all");
-//        getResponse.then().statusCode(200);
-//    }
 
+    @Test
+    @DisplayName("Get shop by Id")
+    public void shouldGetShopById() {
+        RequestSpecification getRequest = RestAssured.given();
+        Response response = getRequest.get("/shops/"+ getIdShop());
 
+        response.then().statusCode(200);
+    }
+
+    private String getIdShop() {
+
+        RequestSpecification getRequest = RestAssured.given();
+        Response response = getRequest.get("/shops/all");
+
+        List<String> jsonResponse = response.jsonPath().getList("$");
+        jsonResponse.get(0);
+        String shopId = response.jsonPath().getString("shopId[0]");
+        return shopId;
+
+    }
 
 }
